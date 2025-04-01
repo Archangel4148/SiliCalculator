@@ -54,8 +54,8 @@ def get_raw_materials(count: int, glist: list):
 
     # Display the provided raw materials
     print("\n=== Raw Materials ===")
-    for x in raw_materials:
-        print(f"For {glist[raw_materials.index(x)]}: {x}")
+    for i, material in enumerate(raw_materials):
+        print(f"For {glist[i]}: {material}")
     check = input("Are these correct? (y/n): ")
     if check.casefold() != "y":
         get_raw_materials(count, glist)
@@ -93,12 +93,6 @@ def get_mole_percent(components):
             get_mole_percent(components)
         print()
         return mole_percents
-
-
-# def mass_from_symbol(symbol: str):
-#     """Get elemental mass from symbol"""
-#     element = getattr(periodictable, symbol)
-#     return element.mass
 
 
 if __name__ == "__main__":
