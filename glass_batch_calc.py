@@ -1,6 +1,4 @@
-import re
-
-import periodictable
+from formula_tools import validate_formula
 
 
 def get_component_count():
@@ -30,7 +28,7 @@ def get_glass_components(component_count: int):
     for i in range(component_count):
         while True:
             component = input(f"Glass component {str(i + 1)}: ")
-            if validate_formula(component):
+            if validate_formula(component)[0]:
                 glass_components.append(component)
                 break
             else:
@@ -48,7 +46,7 @@ def get_raw_materials(count: int, glist: list):
             try:
                 # Get the material formula and add it to the list
                 material = input("Raw material for " + glist[i] + ": ")
-                if validate_formula(material):
+                if validate_formula(material)[0]:
                     raw_materials.append(material)
                     break
             except ValueError:
@@ -63,28 +61,6 @@ def get_raw_materials(count: int, glist: list):
         get_raw_materials(count, glist)
 
     return raw_materials
-
-
-def validate_formula(formula: str) -> bool:
-    """Check that the provided chemical formula is valid"""
-    # Make sure string format is valid
-    element_pattern = r"[A-Z][a-z]?"
-    invalid_pattern = r"[a-z][a-z]"
-    invalid_string = re.findall(invalid_pattern, formula)
-    if invalid_string:
-        return False
-
-    # Extract each symbol from the input string
-    element_strings = re.findall(element_pattern, formula)
-    result_list = []
-
-    # Check each symbol using periodictable
-    for element in element_strings:
-        if hasattr(periodictable, element):
-            result_list.append(element)
-        else:
-            return False
-    return True
 
 
 def get_mole_percent(components):
