@@ -1,129 +1,133 @@
-import math
-import periodictable
 import re
 
-# reads how many glass components, returns int
-def getgcompcount():
+import periodictable
+
+
+def get_component_count():
+    """Get user input for number of glass components"""
     while True:
+        # Input validation
         try:
-            gcompCount = int(input("How many components does your glass have? "))
-            if 1 <= gcompCount <= 10:
+            component_count = int(input("How many components does your glass have? "))
+            if 1 <= component_count <= 10:
                 break
             else:
-                print("Must be 1 to 10 components")
+                raise ValueError
         except ValueError:
             print("Please enter an integer between 1 and 10 ")
-    if gcompCount == 1:
-        print("Your glass has "+str(gcompCount)+" component")
+
+    # Grammar for plural
+    if component_count == 1:
+        print("Your glass has 1 component")
     else:
-        print("Your glass has "+str(gcompCount)+" components")
-    return gcompCount
+        print("Your glass has " + str(component_count) + " components")
+    return component_count
 
 
-# GIVE ME THE ELEMENTS!
-def E(comp):
-    comp = comp
-    elementpattern = r'[A-Z][a-z]?'
-    wrongpattern = r'[a-z][a-z]'
-    check = re.findall(wrongpattern, comp)
-    if check != []:
-         return "error"
-    elist = re.findall(elementpattern, comp)
-    rlist = []
-    for e in elist:
-            if hasattr(periodictable, e):
-                rlist.append(e)
-            else:
-                return "error"
-    return "good"
-            
-
-def getgcomps(gcc):
-    glasscomps = []
-    for i in range(gcc):
+def get_glass_components(component_count: int):
+    """Collect and validate glass components from the user"""
+    glass_components = []
+    for i in range(component_count):
         while True:
-            try:
-                compin = input("Glass component "+str(i+1)+": ")
-                if E(compin) != "error":
-                                        glasscomps.append(compin)
-                                        break
-            # the next 2 lines are required for it to work but don't ever act
-            except ValueError:
-                print("Not a valid component, try again ")
+            component = input(f"Glass component {str(i + 1)}: ")
+            if validate_formula(component):
+                glass_components.append(component)
+                break
+            else:
+                print(f"Invalid component \'{component}\', try again...")
 
-    print(f'Glass list: {glasscomps}')
-    return glasscomps
-        
+    print(f"Glass components: {glass_components}\n")
+    return glass_components
 
-def getmolperc(gcomps):
-    gcomps = gcomps
-    molpercs = []
-    for i in gcomps:
-            while True:
-                try:
-                        molp = float(input(f'What mol% of {i}? '))
-                        molpercs.append(molp)
-                        break
-                except ValueError:
-                        print("Please enter a number between 0 and 100 ")
 
-    # Check if mol% = 100
-    moltotalperc = float(0)
-     
-    for l in molpercs:
-          indexa = molpercs.index(l)
-          moltotalperc = moltotalperc + float(molpercs[indexa])
-    if moltotalperc != 100:
-        print("Mol% total doesn't equal 100.")
-        getmolperc(gcomps)
-    else:
-        print('Mol%\s: ')
-        for x in gcomps:
-            index = gcomps.index(x)
-            print(f'{x}: {molpercs[index]}%')
-        check = input("Are these correct? Y or N ")
-        if check != 'Y':
-            getmolperc(gcomps)
-        return molpercs
-
-    
-def getrmats(count,glist):
-    count = count
-    glist = glist
-    matlist = []
+def get_raw_materials(count: int, glist: list):
+    """Collect and validate raw materials from the user"""
+    raw_materials = []
     for i in range(count):
         while True:
             try:
-                compin = input("Raw material for "+glist[i]+": ")
-                if E(compin) != "error":
-                                            matlist.append(compin)
-                                            break
+                # Get the material formula and add it to the list
+                material = input("Raw material for " + glist[i] + ": ")
+                if validate_formula(material):
+                    raw_materials.append(material)
+                    break
             except ValueError:
-                    print('Not a valid material, please try again. ')
-    print(f'Raw Materials')
-    for x in matlist:
-      print(f'For {glist[matlist.index(x)]}: {x}')
-    check = input("Are these correct? Y or N ")
-    if check != 'Y':
-          getrmats(count, glist)
-          
-    return matlist
+                print("Not a valid material, please try again.")
 
-# Makes compound strings into elements
-def Eread(el):
-    sym = el
-    EL = getattr(periodictable, sym)
-    print(EL.mass)
-      
-            
-      
-     
+    # Display the provided raw materials
+    print("\n=== Raw Materials ===")
+    for x in raw_materials:
+        print(f"For {glist[raw_materials.index(x)]}: {x}")
+    check = input("Are these correct? (y/n): ")
+    if check.casefold() != "y":
+        get_raw_materials(count, glist)
 
-    
+    return raw_materials
 
 
-# Running
-compcount = getgcompcount()
-gcomplist = getgcomps(compcount)
-molpercs = getmolperc(gcomplist)
-rmatlist = getrmats(compcount,gcomplist)
+def validate_formula(formula: str) -> bool:
+    """Check that the provided chemical formula is valid"""
+    # Make sure string format is valid
+    element_pattern = r"[A-Z][a-z]?"
+    invalid_pattern = r"[a-z][a-z]"
+    invalid_string = re.findall(invalid_pattern, formula)
+    if invalid_string:
+        return False
+
+    # Extract each symbol from the input string
+    element_strings = re.findall(element_pattern, formula)
+    result_list = []
+
+    # Check each symbol using periodictable
+    for element in element_strings:
+        if hasattr(periodictable, element):
+            result_list.append(element)
+        else:
+            return False
+    return True
+
+
+def get_mole_percent(components):
+    components = components
+    mole_percents = []
+    for component in components:
+        while True:
+            # Input validation
+            try:
+                percent = float(input(f"What mol% of {component}? "))
+                mole_percents.append(percent)
+                break
+            except ValueError:
+                print("Please enter a number between 0 and 100 ")
+
+    # Get mole percent total
+    total_mole_percent = sum([float(percent) for percent in mole_percents])
+
+    if total_mole_percent != 100:
+        print("Mol% total doesn't equal 100.")
+        get_mole_percent(components)
+    else:
+        # Display the mole percent values
+        print("\n=== Mol% Inputs ===")
+        for x in components:
+            index = components.index(x)
+            print(f"{x}: {mole_percents[index]}%")
+        check = input("Are these correct? (y/n): ")
+        if check.casefold() != "y":
+            get_mole_percent(components)
+        print()
+        return mole_percents
+
+
+# def mass_from_symbol(symbol: str):
+#     """Get elemental mass from symbol"""
+#     element = getattr(periodictable, symbol)
+#     return element.mass
+
+
+if __name__ == "__main__":
+    # Get component count, component list, mole percents, and raw materials
+    component_count = get_component_count()
+    glass_components = get_glass_components(component_count)
+    mole_percents = get_mole_percent(glass_components)
+    raw_materials = get_raw_materials(component_count, glass_components)
